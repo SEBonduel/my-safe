@@ -1,34 +1,37 @@
 <?php
 
-namespace Models;
+namespace App\Models;
 
+use App\Utils\Database;
 use PDO;
 
 class User
 {
-    private $db;
+    private PDO $pdo;
 
-    public function __construct(PDO $db)
+    public function __construct()
     {
-        $this->db = $db;
+        $this->pdo = Database::getConnection();
     }
 
-    public function findByEmail($email)
+    public function findByEmail(string $email)
     {
-        $stmt = $this->db->prepare('SELECT * FROM users WHERE email = :email LIMIT 1');
-        $stmt->bindParam(':email', $email);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt = $this->pdo->prepare('SELECT * FROM users WHERE email = :email');
+        $stmt->execute(['email' => $email]);
+
+        return $stmt->fetch();
     }
 
-    public function create($email, $password)
-    {
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            // Email invalide
-            return false;
-        }
-        $hash = password_hash($password, PASSWORD_ARGON2ID);
-        $stmt = $this->db->prepare('INSERT INTO users (email, password) VALUES (:email, :password)');
-        return $stmt->execute(['email' => $email, 'password' => $hash]);
-    }
+   public function create(string $email, string $passwordHash): bool
+{
+    $stmt = $this->pdo->prepare(
+        'INSERT INTO users (email, password_hash) VALUES (:email, :password_hash)'
+    );
+
+    return $stmt->execute([
+        'email' => $email,
+        'password_hash' => $passwordHash
+    ]);
+}
+
 }

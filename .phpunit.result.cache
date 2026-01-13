@@ -1,0 +1,1 @@
+{"version":2,"defects":{"CryptoTest::testEncryptionReturnsJson":7,"CryptoTest::testDecryptionWorks":8},"times":{"CryptoTest::testEncryptionReturnsJson":0.004,"CryptoTest::testDecryptionWorks":0.001}}

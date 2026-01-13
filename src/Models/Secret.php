@@ -1,49 +1,54 @@
 <?php
 
-Namespace Models;
+namespace App\Models;
 
+use App\Utils\Database;
+use App\Utils\Crypto;
 use PDO;
-use Crypto;
 
-
-class Secret {
-
-    private $db;
-
-    public function __construct(PDO $db)
-    {
-        $this->db = $db;
-    }
-
-    // Ajouter un secret
- public function add($user_id, $title, $login, $password)
+class Secret
 {
-    $crypto = new Crypto($yourEncryptionKey); // Charge la clé depuis un fichier sécurisé
-    $encryptedPassword = $crypto->encrypt($password);
-    $stmt = $this->db->prepare("INSERT INTO secrets (user_id, title, login, password) VALUES (:user_id, :title, :login, :password)");
-    return $stmt->execute([
-        'user_id' => $user_id,
-        'title' => $title,
-        'login' => $login,
-        'password' => $encryptedPassword
-    ]);
-}
+    private PDO $pdo;
 
-    //Voir un secret par son ID
-   public function getAll($user_id)
+    public function __construct()
     {
-        $stmt = $this->db->prepare("SELECT * FROM secrets WHERE user_id = :user_id");
-        $stmt->execute(['user_id' => $user_id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $this->pdo = Database::getConnection();
     }
 
-// Supprimer un secret
-    public function delete($id, $user_id)
+    public function getAllByUser(int $userId): array
     {
-     $stmt = $this->db->prepare("DELETE FROM secrets WHERE id = :id AND user_id = :user_id");
-     return $stmt->execute(['id' => $id, 'user_id' => $user_id]);
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM secrets WHERE user_id = :user_id'
+        );
+
+        $stmt->execute([
+            'user_id' => $userId
+        ]);
+
+        return $stmt->fetchAll();
     }
 
-}
+    public function create(
+        int $userId,
+        string $title,
+        string $login,
+        string $password
+    ): bool {
+        $encryptedPassword = Crypto::encrypt(
+            $password,
+            hex2bin(\APP_KEY)
+        );
 
-?>
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO secrets (user_id, title, login, encrypted_password)
+             VALUES (:user_id, :title, :login, :encrypted_password)'
+        );
+
+        return $stmt->execute([
+            'user_id' => $userId,
+            'title' => $title,
+            'login' => $login,
+            'encrypted_password' => $encryptedPassword
+        ]);
+    }
+}

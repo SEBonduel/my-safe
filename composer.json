@@ -1,0 +1,20 @@
+{
+    "name": "sbastien-demange/my-safe",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "SEBonduel",
+            "email": "sebastien050599@hotmail.fr"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    },
+    "scripts": {
+        "test": "phpunit --colors=always"
+    }
+}

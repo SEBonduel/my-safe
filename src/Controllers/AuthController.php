@@ -1,39 +1,81 @@
 <?php
-// filepath: src/Controllers/AuthController.php
 
-namespace Controllers;
+namespace App\Controllers;
 
-use Models\User;
+use App\Models\User;
+use App\Utils\PasswordValidator;
 
 class AuthController
 {
-    private $userModel;
-
-    public function __construct($db)
+    public function register()
     {
-        $this->userModel = new User($db);
+        $error = null;
+        $success = null;
+        // Si le formulaire est soumis (POST)
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // --- DÉBUT VERIF CSRF ---
+            $token = $_POST['csrf_token'] ?? '';
+
+            if ($token !== Security::getCsrfToken()) {
+                // Arrêt immédiat du script avec un message d'erreur
+                die('Erreur de sécurité : Jeton CSRF invalide !');
+            }
+            // --- FIN VERIF CSRF ---
+
+            $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+            $password = $_POST['password'] ?? '';
+            // 1. On vérifie d'abord si les champs sont remplis
+            if (!$email || empty($password)) {
+                $error = 'Veuillez remplir tous les champs.';
+            }
+
+            // 2. On utilise notre validateur TDD pour la force du mot de passe
+            elseif (!PasswordValidator::validate($password)) {
+                $error = "Le mot de passe est trop faible (min 8 caractères et
+                1 chiffre).";
+            } else {
+                $userModel = new User();
+                // 3. Le reste de la logique reste identique (Vérif email + Hash + Création)
+                if ($userModel->findByEmail($email)) {
+                    $error = 'Cet email est déjà utilisé.';
+                } else {
+                    $hash = password_hash($password, PASSWORD_DEFAULT);
+                    if ($userModel->create($email, $hash)) {
+                        $success = 'Compte créé avec succès !';
+                    } else {
+                        $error = 'Erreur lors de la création du compte.';
+                    }
+                }
+            }
+        }
+        // Chargement de la Vue (en passant les variables $error et $success)
+        require_once __DIR__ . '/../../templates/register.php';
     }
 
-    public function register($email, $password)
+    public function login()
     {
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return ['error' => 'Email invalide.'];
-        }
-        if ($this->userModel->findByEmail($email)) {
-            return ['error' => 'Email déjà utilisé.'];
-        }
-        $this->userModel->create($email, $password);
-        return ['success' => true];
-    }
+        $errors = [];
 
-    public function login($email, $password)
-    {
-        $user = $this->userModel->findByEmail($email);
-        if (!$user || !password_verify($password, $user['password'])) {
-            return ['error' => 'Identifiants invalides.'];
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = trim($_POST['email'] ?? '');
+            $password = $_POST['password'] ?? '';
+
+            if (empty($email) || empty($password)) {
+                $errors[] = 'Tous les champs sont obligatoires';
+            } else {
+                $userModel = new User();
+                $user = $userModel->findByEmail($email);
+
+                if (!$user || !password_verify($password, $user['password_hash'])) {
+                    $errors[] = 'Email ou mot de passe incorrect';
+                } else {
+                    \App\Utils\Security::login($user['id']);
+                    header('Location: /dashboard');
+                    exit();
+                }
+            }
         }
-        // Démarrer la session ici
-        $_SESSION['user_id'] = $user['id'];
-        return ['success' => true];
+
+        require __DIR__ . '/../../templates/login.php';
     }
 }
