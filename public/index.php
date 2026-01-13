@@ -1,4 +1,19 @@
 <?php
+ 
+// 1. CHARGEMENT DE L'AUTOLOADER & CONFIG
+// ---------------------------------------------------------
+// On charge l'autoloader de Composer (remplace tous les require de classes)
+require_once __DIR__ . '/../vendor/autoload.php';
+ 
+use Dotenv\Dotenv;
+ 
+// --- CHARGEMENT DES VARIABLES D'ENVIRONNEMENT ---
+ 
+// On vérifie si un fichier .env existe physiquement (cas Laragon)
+if (file_exists(__DIR__ . '/../.env')) {
+    $dotenv = Dotenv::createImmutable(__DIR__ . '/..');
+    $dotenv->load();
+}
 
 // 1. CHARGEMENT DE L'AUTOLOADER & CONFIG
 // ---------------------------------------------------------

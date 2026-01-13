@@ -46,6 +46,13 @@
         <label>Mot de passe</label>
         <input type="password" name="password" id="password" required>
     </div>
+    <div class="strength">
+    <div class="bar">
+        <div class="bar-fill" id="strengthBar"></div>
+    </div>
+    <div class="text" id="strengthText"></div>
+</div>
+
 
     <button type="submit">S’inscrire</button>
 </form>
