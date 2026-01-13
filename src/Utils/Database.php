@@ -6,12 +6,6 @@ use PDO;
 
 class Database
 {
-    private const HOST = \DB_HOST;
-    private const DB_NAME = \DB_NAME;
-    private const USER = \DB_USER;
-    private const PASS = \DB_PASS;
-    private const CHARSET = \DB_CHARSET;
-
     private static ?PDO $pdoInstance = null;
 
     private function __construct()
@@ -21,13 +15,20 @@ class Database
     public static function getConnection(): PDO
     {
         if (self::$pdoInstance === null) {
-            $dsn = 'mysql:host=' . self::HOST . ';dbname=' . self::DB_NAME . ';charset=' . self::CHARSET;
+            $dsn = 'mysql:host=' . \DB_HOST
+                . ';dbname=' . \DB_NAME
+                . ';charset=' . \DB_CHARSET;
 
-            self::$pdoInstance = new PDO($dsn, self::USER, self::PASS, [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false
-            ]);
+            self::$pdoInstance = new PDO(
+                $dsn,
+                \DB_USER,
+                \DB_PASS,
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false
+                ]
+            );
         }
 
         return self::$pdoInstance;

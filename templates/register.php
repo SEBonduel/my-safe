@@ -35,19 +35,23 @@
         <?php endif; ?>
 
         <form method="POST">
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" name="email" required>
-            </div>
+    <input type="hidden" name="csrf_token" value="<?= \App\Utils\Security::getCsrfToken() ?>">
 
-            <div class="form-group">
-                <label>Mot de passe</label>
-                <input type="password" name="password" required>
-            </div>
-
-            <button type="submit">S’inscrire</button>
-        </form>
+    <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" required>
     </div>
+
+    <div class="form-group">
+        <label>Mot de passe</label>
+        <input type="password" name="password" id="password" required>
+    </div>
+
+    <button type="submit">S’inscrire</button>
+</form>
+
+    </div>
+    <script src="/js/register.js"></script>
 
 </body>
 
@@ -144,7 +148,7 @@
         font-weight: bold;
     }
 
-        .navbar {
+    .navbar {
         position: fixed;
         top: 0;
         left: 0;
@@ -189,5 +193,27 @@
         background: linear-gradient(135deg, #38bdf8, #0ea5e9);
         color: #020617;
         font-weight: bold;
-    }   
+    }
+
+    .strength {
+        margin-top: 8px;
+    }
+
+    .bar {
+        height: 8px;
+        background: #1e293b;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .bar-fill {
+        height: 100%;
+        width: 0%;
+        transition: width 0.3s ease, background 0.3s ease;
+    }
+
+    .text {
+        margin-top: 6px;
+        font-size: 13px;
+    }
 </style>

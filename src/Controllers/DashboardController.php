@@ -30,7 +30,7 @@ class DashboardController
                     $password
                 );
 
-                header('Location: /dashboard');
+                header('Location: dashboard');
                 exit;
             }
         }
