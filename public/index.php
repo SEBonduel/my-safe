@@ -28,6 +28,8 @@ require_once __DIR__ . '/../config/security.php';
 // ---------------------------------------------------------
 use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
+use App\Controllers\ApiController;
+
 
 // 3. ANALYSE DE L'URL
 // ---------------------------------------------------------
@@ -41,7 +43,9 @@ $uri = parse_url($requestUri, PHP_URL_PATH);
 
 try {
     match (true) {
-        // Routes AUTH
+        // Route API
+        str_ends_with($uri, '/api/secrets') => (new ApiController())->index(),  
+              // Routes AUTH
         str_ends_with($uri, 'register') => (new AuthController())->register(),
         str_ends_with($uri, '/login')    => (new AuthController())->login(),
 
@@ -57,12 +61,15 @@ try {
         // Route RACINE (Redirection)
         str_ends_with($uri, '/') || str_ends_with($uri, '/index.php') => header('Location: register') && exit,
 
+
+
         // Route PAR DÉFAUT (404)
         default => throw new Exception("Page non trouvée"),
     };
-} catch (Exception $e) {
-    // Gestion centralisée des erreurs 404
-    http_response_code(404);
-    echo "<h1>404 - Page non trouvée</h1>";
-    echo "<p>Le chemin '{$uri}' n'existe pas.</p>";
+} catch (Throwable $e) { // Utilisez 'Throwable' pour tout attraper (Erreurs et Exceptions)
+    echo "<h1>Erreur Critique !</h1>";
+    echo "<p><strong>Message :</strong> " . $e->getMessage() . "</p>";
+    echo "<p><strong>Fichier :</strong> " . $e->getFile() . "</p>";
+    echo "<p><strong>Ligne :</strong> " . $e->getLine() . "</p>";
+    exit;
 }
